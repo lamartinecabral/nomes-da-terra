@@ -891,7 +891,7 @@ export default function App() {
                   </th>
                   <th className="py-3 px-4 text-right">% População</th>
                   <th className="py-3 px-4 text-right">Quociente Locacional</th>
-                  <th className="py-3 px-4 w-28 text-center">Ação</th>
+                  <th className="py-3 px-4 text-center">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 text-sm">
