@@ -3,8 +3,6 @@ import { createRoot } from "react-dom/client";
 
 import {
   Search,
-  ChevronDown,
-  ChevronUp,
   MapPin,
   TrendingUp,
   Users,
@@ -297,15 +295,18 @@ export default function App() {
     });
   }, [currentStateInfo]);
 
-  /* Helper to toggle row expansion */
-  const toggleExpand = (sobrenome: string) => {
-    if (expandedSurname === sobrenome && detailSource === "ranking") {
-      setExpandedSurname(null);
-      setDetailSource(null);
-    } else {
-      setExpandedSurname(sobrenome);
-      setDetailSource("ranking");
-    }
+  /* Selecting a ranking row opens the shared surname search section. */
+  const openSurnameSearchDetails = (sobrenome: string) => {
+    setSurnameQuery(sobrenome);
+    setSurnameSearchError(null);
+    setExpandedSurname(sobrenome);
+    setDetailSource("search");
+
+    requestAnimationFrame(() => {
+      document
+        .getElementById("surname-search-section")
+        ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   };
 
   const searchSurname = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -803,7 +804,6 @@ export default function App() {
           </div>
         </section>
 
-        {}
         <section className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
           {/* Table Control Bar */}
           <div className="p-4 md:p-6 border-b border-slate-200 bg-slate-50/50 space-y-4">
@@ -816,73 +816,17 @@ export default function App() {
                 </h3>
                 <p className="text-xs text-slate-500">
                   Sobrenomes ordenados pelo Quociente Locacional (QL). Clique na
-                  linha para abrir o mapa nacional da família.
+                  linha para consultar a distribuição nacional do sobrenome.
                 </p>
               </div>
             </div>
-            <form
-              onSubmit={searchSurname}
-              className="flex flex-col gap-2 sm:flex-row sm:items-center"
-            >
-              <label className="sr-only" htmlFor="surname-search">
-                Pesquisar sobrenome
-              </label>
-              <div className="relative flex-1">
-                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-                <input
-                  id="surname-search"
-                  type="search"
-                  value={surnameQuery}
-                  onChange={(event) => {
-                    setSurnameQuery(event.target.value);
-                    setSurnameSearchError(null);
-                  }}
-                  placeholder="Pesquisar um sobrenome"
-                  className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-100"
-                />
-              </div>
-              <button
-                type="submit"
-                disabled={isSearchingSurname || !surnameQuery.trim()}
-                className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Search className="h-4 w-4" />
-                {isSearchingSurname ? "Pesquisando..." : "Pesquisar"}
-              </button>
-              {detailSource === "search" && expandedSurname && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setExpandedSurname(null);
-                    setDetailSource(null);
-                    setSurnameSearchError(null);
-                    setSurnameQuery("");
-                    setSurnameSearchError(null);
-                  }}
-                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition-colors hover:bg-slate-100"
-                  aria-label="Fechar detalhes do sobrenome"
-                  title="Fechar detalhes"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </form>
-            {surnameSearchError && (
-              <p className="text-xs text-red-700">{surnameSearchError}</p>
-            )}
           </div>
 
-          {detailSource === "search" && expandedSurname && (
-            <div className="border-b border-slate-300">
-              {renderNationwideDetails(expandedSurname)}
-            </div>
-          )}
-
           {}
-          <div className="overflow-x-auto">
+          <div className="min-h-0 max-h-[calc(100vh-20rem)] overflow-auto md:max-h-[calc(100vh-16rem)]">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-600 tracking-wider">
+                <tr className="sticky top-0 z-10 bg-slate-100 border-b border-slate-200 text-[11px] font-bold uppercase text-slate-600 tracking-wider">
                   <th className="py-3 px-4 w-12 text-center">#</th>
                   <th className="py-3 px-4">Sobrenome</th>
                   <th className="py-3 px-4">Fonte</th>
@@ -891,14 +835,13 @@ export default function App() {
                   </th>
                   <th className="py-3 px-4 text-right">% População</th>
                   <th className="py-3 px-4 text-right">Quociente Locacional</th>
-                  <th className="py-3 px-4 text-center">Ação</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 text-sm">
                 {stateRanking.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={6}
                       className="py-12 text-center text-slate-500 bg-white"
                     >
                       <p className="font-semibold">
@@ -908,10 +851,6 @@ export default function App() {
                   </tr>
                 ) : (
                   stateRanking.map((row) => {
-                    const isExpanded =
-                      detailSource === "ranking" &&
-                      expandedSurname === row.sobrenome;
-
                     /* Visual indicator color according to QL intensity */
                     let qlBadgeClass =
                       "bg-slate-100 text-slate-700 border-slate-200";
@@ -935,12 +874,10 @@ export default function App() {
                       <React.Fragment key={row.sobrenome}>
                         {/* Table Main Row */}
                         <tr
-                          onClick={() => toggleExpand(row.sobrenome)}
-                          className={`cursor-pointer transition-colors hover:bg-amber-50/60 ${
-                            isExpanded
-                              ? "bg-amber-50 font-medium border-l-4 border-amber-500"
-                              : "bg-white"
-                          }`}
+                          onClick={() =>
+                            openSurnameSearchDetails(row.sobrenome)
+                          }
+                          className="cursor-pointer bg-white transition-colors hover:bg-amber-50/60"
                         >
                           <td className="py-3.5 px-4 text-center font-bold text-slate-400 text-xs">
                             {row.rank <= 3 ? (
@@ -989,41 +926,7 @@ export default function App() {
                               {format(row.quociente_locacional)}x
                             </span>
                           </td>
-                          <td className="py-3.5 px-4 text-center">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                toggleExpand(row.sobrenome);
-                              }}
-                              className={`inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-md border font-medium transition-all ${
-                                isExpanded
-                                  ? "bg-blue-900 text-white border-blue-900"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border-slate-300"
-                              }`}
-                            >
-                              <span>
-                                {isExpanded ? "Fechar" : "Ver Brasil"}
-                              </span>
-                              {isExpanded ? (
-                                <ChevronUp className="w-3.5 h-3.5" />
-                              ) : (
-                                <ChevronDown className="w-3.5 h-3.5" />
-                              )}
-                            </button>
-                          </td>
                         </tr>
-
-                        {/* Expandable Detail Panel across all States */}
-                        {isExpanded && (
-                          <tr>
-                            <td
-                              colSpan={7}
-                              className="p-0 border-b border-slate-300"
-                            >
-                              {renderNationwideDetails(row.sobrenome)}
-                            </td>
-                          </tr>
-                        )}
                       </React.Fragment>
                     );
                   })
@@ -1079,6 +982,85 @@ export default function App() {
               Fonte: Dados estruturados com base no Censo Demográfico do IBGE.
             </div>
           </div>
+        </section>
+
+        {/* Surname search and nationwide details */}
+        <section
+          id="surname-search-section"
+          aria-labelledby="surname-search-title"
+          className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden scroll-mt-4"
+        >
+          <div className="p-4 md:p-6 bg-slate-50/50 space-y-4">
+            <div>
+              <h2
+                id="surname-search-title"
+                className="text-lg font-bold text-slate-900 flex items-center gap-2"
+              >
+                <Search className="w-5 h-5 text-blue-800" />
+                Pesquisar um sobrenome
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Consulte a distribuição do sobrenome pelos estados brasileiros,
+                mesmo quando ele não aparece na página atual do ranking.
+              </p>
+            </div>
+            <form
+              onSubmit={searchSurname}
+              className="flex flex-col gap-2 sm:flex-row sm:items-center"
+            >
+              <label className="sr-only" htmlFor="surname-search">
+                Pesquisar sobrenome
+              </label>
+              <div className="relative flex-1">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                <input
+                  id="surname-search"
+                  type="search"
+                  value={surnameQuery}
+                  onChange={(event) => {
+                    setSurnameQuery(event.target.value);
+                    setSurnameSearchError(null);
+                  }}
+                  placeholder="Digite um sobrenome"
+                  className="w-full rounded-md border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 outline-none transition-colors placeholder:text-slate-400 focus:border-blue-700 focus:ring-2 focus:ring-blue-100"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={isSearchingSurname || !surnameQuery.trim()}
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-blue-900 px-3.5 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-800 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <Search className="h-4 w-4" />
+                {isSearchingSurname ? "Pesquisando..." : "Pesquisar"}
+              </button>
+              {detailSource === "search" && expandedSurname && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setExpandedSurname(null);
+                    setDetailSource(null);
+                    setSurnameSearchError(null);
+                    setSurnameQuery("");
+                  }}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-md border border-slate-300 bg-white text-slate-600 transition-colors hover:bg-slate-100"
+                  aria-label="Fechar detalhes do sobrenome"
+                  title="Fechar detalhes"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </form>
+            {surnameSearchError && (
+              <p className="text-xs text-red-700" role="alert">
+                {surnameSearchError}
+              </p>
+            )}
+          </div>
+          {detailSource === "search" && expandedSurname && (
+            <div className="border-t border-slate-300">
+              {renderNationwideDetails(expandedSurname)}
+            </div>
+          )}
         </section>
       </main>
 
