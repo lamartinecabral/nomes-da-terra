@@ -19,17 +19,28 @@
       }
     </script>
     <script src="./unsupported-browser/check.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.29.7/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com/"></script>
     <script src="./assets/analytics.mjs" type="module" async></script>
   </head>
   <body>
     <div id="root"></div>
-    <script
-      type="text/babel"
-      data-type="module"
-      data-presets="react,typescript"
-      src="./index.tsx"
-    ></script>
+    <script>
+      (async () => {
+        const url = "./babel-worker.js";
+        const scope =
+          "./" + location.pathname.replace(/^\/|\/(index\.html)?$/g, "");
+        await navigator.serviceWorker.register(url, { scope });
+        await navigator.serviceWorker.ready;
+
+        // hard reloads explicitly disengage the Service Worker controller by browser design.
+        // in this case a normal reload gives control back to the Service Worker.
+        if (!navigator.serviceWorker.controller) return location.reload();
+
+        const script = document.createElement("script");
+        script.type = "module";
+        script.src = "./index.tsx";
+        document.head.appendChild(script);
+      })();
+    </script>
   </body>
 </html>
