@@ -305,7 +305,7 @@ export default function App() {
 
     requestAnimationFrame(() => {
       document
-        .getElementById("surname-search-section")
+        .getElementById("nationwide-details")
         ?.scrollIntoView({ behavior: "smooth", block: "start" });
     });
   };
@@ -1013,7 +1013,6 @@ export default function App() {
 
         {/* Surname search and nationwide details */}
         <section
-          id="surname-search-section"
           aria-labelledby="surname-search-title"
           className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden scroll-mt-4"
         >
@@ -1084,7 +1083,7 @@ export default function App() {
             )}
           </div>
           {detailSource === "search" && expandedSurname && (
-            <div className="border-t border-slate-300">
+            <div id="nationwide-details" className="border-t border-slate-300">
               {renderNationwideDetails(expandedSurname)}
             </div>
           )}
