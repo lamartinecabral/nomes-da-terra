@@ -27,8 +27,7 @@
     <script>
       (async () => {
         const url = "./babel-worker.js";
-        const scope =
-          "./" + location.pathname.replace(/^\/|\/(index\.html)?$/g, "");
+        const scope = "./";
         await navigator.serviceWorker.register(url, { scope });
         await navigator.serviceWorker.ready;
 
