@@ -18,15 +18,7 @@
         }
       }
     </script>
-    <script>
-      (function (supportedBrowser) {
-        if (!supportedBrowser) location.replace("./unsupported-browser");
-      })(
-        typeof HTMLScriptElement.supports === "function" &&
-          HTMLScriptElement.supports("module") &&
-          HTMLScriptElement.supports("importmap"),
-      );
-    </script>
+    <script src="./unsupported-browser/check.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.29.7/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com/3.4.17"></script>
     <script src="./assets/analytics.mjs" type="module" async></script>
