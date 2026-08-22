@@ -23,7 +23,7 @@ import {
   queryNationWideDetails,
   queryStateRanking,
   querySurname,
-} from "./query.mjs";
+} from "./query-csv.mjs";
 
 import { NationwideMap } from "./NationwideMap.tsx";
 
