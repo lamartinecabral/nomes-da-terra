@@ -55,12 +55,49 @@ const getFrequencias = (() => {
   };
 })();
 
+const getFrequenciasFromCompressed = (() => {
+  const schema = z
+    .object({
+      nome: z.string(),
+      localidade: z.coerce.number(),
+      frequencia: z.number(),
+    })
+    .or(z.null())
+    .catch(null);
+
+  const fetcher = async () => {
+    const csv = await fetch("./assets/frequencias_compressed.csv").then((res) =>
+      res.text(),
+    );
+
+    /** @type {Awaited<ReturnType<typeof getFrequencias>>} */
+    const frequencias = parseCsv(csv)
+      .flatMap(({ nome, ...frequencias }) =>
+        Object.entries(frequencias).map(([localidade, frequencia]) =>
+          schema.parse({ nome, localidade, frequencia }),
+        ),
+      )
+      .filter((f) => f !== null)
+      .map((f, i) => ({ id: i + 1, ...f }));
+
+    return frequencias;
+  };
+
+  /** @type {ReturnType<typeof fetcher>} */
+  let promise;
+  return () => {
+    if (promise) return promise;
+    return (promise = fetcher());
+  };
+})();
+
 const getSobrenomes = (() => {
   /** @type {{nome: string}[]} */
   let sobrenomes;
   return async () => {
     if (sobrenomes) return sobrenomes;
-    const frequencias = await getFrequencias();
+    // const frequencias = await getFrequencias();
+    const frequencias = await getFrequenciasFromCompressed();
     return (sobrenomes = frequencias
       .reduce((acc, f) => {
         if (!acc.includes(f.nome)) acc.push(f.nome);
@@ -76,7 +113,8 @@ const getFrequenciasAnalise = (() => {
   return async () => {
     if (frequenciasAnalise) return frequenciasAnalise;
 
-    const frequencias = await getFrequencias();
+    // const frequencias = await getFrequencias();
+    const frequencias = await getFrequenciasFromCompressed();
     const localidades = await getLocalidades();
 
     const localidadesMap = localidades.reduce((acc, l) => {
