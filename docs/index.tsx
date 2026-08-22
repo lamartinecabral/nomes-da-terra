@@ -72,6 +72,14 @@ const qlMapColor = (ql: number | undefined) => {
   return "#fbbf24";
 };
 
+const darkerColor = (hex: string, amount = 0.4) => {
+  const value = hex.replace("#", "");
+  const channels = [0, 2, 4].map((index) =>
+    Math.round(parseInt(value.slice(index, index + 2), 16) * (1 - amount)),
+  );
+  return `#${channels.map((channel) => channel.toString(16).padStart(2, "0")).join("")}`;
+};
+
 const geometryRings = (
   geometry: StateGeoJson["features"][number]["geometry"],
 ) =>
@@ -142,12 +150,13 @@ function NationwideMap({
             const uf = feature.properties?.SIGLA ?? feature.id ?? "";
             const state = stateByUf.get(uf);
             const isSelected = uf === selectedUf;
+            const fillColor = qlMapColor(state?.quociente_locacional);
             return (
               <path
                 key={uf}
                 d={pathForFeature(feature)}
-                fill={qlMapColor(state?.quociente_locacional)}
-                stroke={isSelected ? "#1e3a8a" : "#ffffff"}
+                fill={fillColor}
+                stroke={isSelected ? darkerColor(fillColor) : "#ffffff"}
                 strokeWidth={isSelected ? 2.5 : 1}
                 strokeLinejoin="round"
                 className="transition-opacity hover:opacity-80 outline-none cursor-pointer"
