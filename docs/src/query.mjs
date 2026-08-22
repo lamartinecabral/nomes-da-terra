@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 const projectId = "";
 const supabaseKey = "";
 
-/** @typedef {import("../src/generated/db.types.ts").Database} Database */
+/** @typedef {import("../../src/generated/db.types.ts").Database} Database */
 
 /** @type {import("@supabase/supabase-js").SupabaseClient<Database>} */
 const supabase = createClient(`https://${projectId}.supabase.co`, supabaseKey);
