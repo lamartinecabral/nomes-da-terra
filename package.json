@@ -13,6 +13,7 @@
     "db:populate": "node scripts/populate-ibge-data.ts",
     "start": "python3 -m http.server 8000 --directory docs",
     "test": "node --test",
+    "lint": "npx @biomejs/biome lint",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
